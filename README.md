@@ -7,7 +7,7 @@ Kurssin järjestää Helsingin yliopisto.
 ## Osat
 
 * [x] Osa 0 – Web-sovellusten perusteet
-* [ ] Osa 1 – Reactin perusteet
+* [x] Osa 1 – Reactin perusteet
 * [ ] Osa 2 – Palvelimen kanssa kommunikointi
 * [ ] Osa 3 – Palvelimen ohjelmointi NodeJS:llä ja Expressillä
 * [ ] Osa 4 – Express-palvelinten testaus ja käyttäjähallinta
