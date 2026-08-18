@@ -66,3 +66,16 @@ sequenceDiagram
 
     Note right of browser: The browser executes the callback function that renders the notes 
 ``` 
+## Osa 0.6: Uusi muistiinpano
+```mermaid
+sequenceDiagram
+    participant browser
+    participant server
+
+    Note right of browser: The user writes a new note and submits the form
+    browser->>server: POST /exampleapp/new_note, {content: "new-note", date: "2026-08-01T12:00:00.000Z"}
+    Note right of browser: The browser executes JavaScript code that adds a new note to the list and re-renders the list on the screen.  
+    activate server
+    server-->>browser: HTTP 201 Created, {message: "note created"}
+    deactivate server
+``` 
