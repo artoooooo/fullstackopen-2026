@@ -9,7 +9,7 @@ Osan 3 edellyttämä deploy: https://fullstackopen-2026-mb5f.onrender.com/
 * [x] Osa 0 – Web-sovellusten perusteet
 * [x] Osa 1 – Reactin perusteet
 * [x] Osa 2 – Palvelimen kanssa kommunikointi
-* [ ] Osa 3 – Palvelimen ohjelmointi NodeJS:llä ja Expressillä
+* [x] Osa 3 – Palvelimen ohjelmointi NodeJS:llä ja Expressillä
 * [ ] Osa 4 – Express-palvelinten testaus ja käyttäjähallinta
 * [ ] Osa 5 – React-sovellusten testaus
 * [ ] Osa 6 – Edistynyt tilanhallinta
