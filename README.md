@@ -3,7 +3,7 @@
 Omat tehtävä- ja projektiratkaisuni [Full Stack Open](https://fullstackopen.com/) -kurssilta.
 
 Kurssin järjestää Helsingin yliopisto.
-
+Osan 3 edellyttämä deploy: https://fullstackopen-2026-mb5f.onrender.com/
 ## Osat
 
 * [x] Osa 0 – Web-sovellusten perusteet
