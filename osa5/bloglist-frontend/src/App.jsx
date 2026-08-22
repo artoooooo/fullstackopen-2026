@@ -6,7 +6,6 @@ import loginService from './services/login'
 import NewFrom from './components/NewForm'
 import { getUser as getCachedUser, invalidateUser } from './services/user'
 import Notification from './components/Notification'
-import Togglable from './components/Togglable'
 import Blogs from './components/Blogs'
 import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material'
 import {
