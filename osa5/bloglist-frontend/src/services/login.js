@@ -1,4 +1,4 @@
-import { setUser } from "./user"
+import { setUser } from './user'
 const baseUrl = '/api/login'
 
 
@@ -10,7 +10,7 @@ const login = async credentials => {
     },
     body: JSON.stringify(credentials)
   })
-  
+
   const data = await response.json()
 
   if (!response.ok) {

@@ -1,43 +1,68 @@
 
+import {
+  useNavigate
+} from 'react-router-dom'
+import {  useEffect } from 'react'
+import { TextField, Button, Box } from '@mui/material'
 
 const Login = ({
   username,
   password,
   setUsername,
   setPassword,
-  handleLogin
+  handleLogin,
+  user
 }) => {
+  const naavigate = useNavigate()
 
 
+  useEffect(() => {
+    if (user) {
+      naavigate('/')
+    }
+  }, [user, naavigate])
 
+  const handleFromSubmit = async (event) => {
+    event.preventDefault()
+    try {
+      const user = await handleLogin(event)
+      if(user) {
+        naavigate('/')
+      }
+    } catch (error) {
+      console.error(error.message)
+    }
+
+  }
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Log in to application</h2>
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>
-            username
-            <input
-              type="text"
-              value={username}
-              onChange={({ target }) => setUsername(target.value)}
-            />
-          </label>
-        </div>
 
-        <div>
-          <label>
-            password
-            <input
-              type="password"
-              value={password}
-              onChange={({ target }) => setPassword(target.value)}
-            />
-          </label>
-        </div>
+      <form onSubmit={handleFromSubmit}>
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            label="Username"
+            type="text"
+            value={username}
+            onChange={({ target }) => setUsername(target.value)}
+            fullWidth
+          />
+        </Box>
 
-        <button type="submit">login</button>
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={({ target }) => setPassword(target.value)}
+            fullWidth
+          />
+        </Box>
+
+        <Button type="submit" variant="contained">
+          Login
+        </Button>
       </form>
     </div>
   )

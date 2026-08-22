@@ -4,8 +4,8 @@ import { getUser } from './user'
 const baseUrl = '/api/blogs'
 
 const authorizationHeader = () => ({
-    headers: { Authorization: `Bearer ${getUser().token}` }
-  })
+  headers: { Authorization: `Bearer ${getUser().token}` }
+})
 
 const getAll = () => {
   const request = axios.get(baseUrl)
@@ -26,7 +26,7 @@ const update = (id, newObject) => {
 
 const deleteBlog = (id) => {
   const config = authorizationHeader()
-  
+
   const request = axios.delete(`${ baseUrl }/${id}`, config)
   return request.then(response => response.data)
 }

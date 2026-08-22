@@ -1,8 +1,10 @@
 
-const Notification  = ({ message, color='green' }) => (
-  <div style={{ backgroundColor: '#ddd', border: `2px solid ${color}`, padding: '10px' }}>
-    <p>{message}</p>
-  </div>
+import { Alert, Typography } from '@mui/material'
+
+const Notification  = ({ message, severity='success' }) => (
+  <Alert severity={severity}>
+    <Typography>{message}</Typography>
+  </Alert>
 )
 
 export default Notification

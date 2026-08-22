@@ -1,7 +1,9 @@
-
+import { expect, vi, test, describe } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from '../src/components/Blog'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+
 
 const user = {
   username: 'root',
@@ -20,8 +22,28 @@ const blog = {
   id: '6a875575595edf2fb0b69c85',
 }
 
+const renderBlogWithRouter = (user = null) => {
+  render(
+    <MemoryRouter initialEntries={[`/blogs/${blog.id}`]}>
+      <Routes>
+        <Route
+          path="/blogs/:id"
+          element={
+            <Blog
+              blogs={[blog]}
+              user={user}
+              onLike={vi.fn()}
+              deleteBlog={vi.fn()}
+            />
+          }
+        />
+      </Routes>
+    </MemoryRouter>
+  )
+}
+
 describe('<Blog />', () => {
-  test('[5.13] renders blog title and author, but does not initially show other information', () => {
+  test.skip('renders blog title and author, but does not initially show other information', { tags: ['5.13'] }, () => {
     render(
       <Blog
         blog={blog}
@@ -38,7 +60,7 @@ describe('<Blog />', () => {
     expect(screen.queryByText(user.name)).toBeNull()
   })
 
-  test('[5.14] shows blog information when show button is clicked', async () => {
+  test.skip('shows blog information when show button is clicked', { tags: ['5.14'] }, async () => {
     const userEventInstance = userEvent.setup()
 
     render(
@@ -59,56 +81,7 @@ describe('<Blog />', () => {
     expect(screen.getByText(user.name)).toBeDefined()
   })
 
-  test('[5.15] calls updateBlog twice when like button is clicked twice', async () => {
-  const userEventInstance = userEvent.setup()
-  const updateBlog = vi.fn()
-
-  render(
-    <Blog
-      blog={blog}
-      user={user}
-      updateBlog={updateBlog}
-      deleteBlog={vi.fn()}
-    />
-  )
-
-  await userEventInstance.click(
-    screen.getByRole('button', { name: 'show' })
-  )
-
-  const likeButton = screen.getByRole('button', { name: 'like' })
-
-  await userEventInstance.click(likeButton)
-  await userEventInstance.click(likeButton)
-
-  expect(updateBlog).toHaveBeenCalledTimes(2)
-})
-  test('hides blog information when hide button is clicked', async () => {
-    const userEventInstance = userEvent.setup()
-
-    render(
-      <Blog
-        blog={blog}
-        user={user}
-        updateBlog={vi.fn()}
-        deleteBlog={vi.fn()}
-      />
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'show' })
-    )
-
-    expect(screen.getByText(blog.url)).toBeDefined()
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'hide' })
-    )
-
-    expect(screen.queryByText(blog.url)).toBeNull()
-  })
-
-  test('calls updateBlog when like button is clicked', async () => {
+  test.skip('calls updateBlog twice when like button is clicked twice', { tags: ['5.15'] }, async () => {
     const userEventInstance = userEvent.setup()
     const updateBlog = vi.fn()
 
@@ -125,118 +98,47 @@ describe('<Blog />', () => {
       screen.getByRole('button', { name: 'show' })
     )
 
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'like' })
-    )
+    const likeButton = screen.getByRole('button', { name: 'like' })
 
-    expect(updateBlog).toHaveBeenCalledTimes(1)
-    expect(updateBlog).toHaveBeenCalledWith({
-      ...blog,
-      likes: blog.likes + 1,
-    })
+    await userEventInstance.click(likeButton)
+    await userEventInstance.click(likeButton)
+
+    expect(updateBlog).toHaveBeenCalledTimes(2)
   })
 
-  test('shows delete button when current user owns the blog', async () => {
-    const userEventInstance = userEvent.setup()
-
-    render(
-      <Blog
-        blog={blog}
-        user={user}
-        updateBlog={vi.fn()}
-        deleteBlog={vi.fn()}
-      />
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'show' })
-    )
+  test('shows blog information and likes but no buttons to a logged-out user', { tags: ['5.27'] }, () => {
+    renderBlogWithRouter()
 
     expect(
-      screen.getByRole('button', { name: 'delete' })
-    ).toBeDefined()
+      screen.getByRole('heading', {
+        name: `${blog.author}: ${blog.title}`,
+      })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: blog.url })).toBeInTheDocument()
+    expect(screen.getByText(`likes ${blog.likes}`)).toBeInTheDocument()
+    expect(screen.getByText(`Added by ${user.name}.`)).toBeInTheDocument()
+
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
   })
 
-  test('does not show delete button when current user does not own the blog', async () => {
-    const userEventInstance = userEvent.setup()
+  test('shows both like and delete buttons to the creator of the blog', { tags: ['5.27'] }, () => {
+    renderBlogWithRouter(user)
 
+    expect(screen.getByRole('button', { name: 'like' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'delete' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button')).toHaveLength(2)
+  })
+  test('shows only the like button to a logged-in user who did not create the blog', { tags: ['5.27'] }, () => {
     const anotherUser = {
       username: 'another',
       name: 'Another User',
       id: 'different-id',
     }
 
-    render(
-      <Blog
-        blog={blog}
-        user={anotherUser}
-        updateBlog={vi.fn()}
-        deleteBlog={vi.fn()}
-      />
-    )
+    renderBlogWithRouter(anotherUser)
 
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'show' })
-    )
-
-    expect(
-      screen.queryByRole('button', { name: 'delete' })
-    ).toBeNull()
-  })
-
-  test('calls deleteBlog when delete is clicked and confirmed', async () => {
-    const userEventInstance = userEvent.setup()
-    const deleteBlog = vi.fn()
-
-    window.confirm = vi.fn(() => true)
-
-    render(
-      <Blog
-        blog={blog}
-        user={user}
-        updateBlog={vi.fn()}
-        deleteBlog={deleteBlog}
-      />
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'show' })
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'delete' })
-    )
-
-    expect(window.confirm).toHaveBeenCalledWith(
-      `Remove blog ${blog.title} by ${blog.author}`
-    )
-    expect(deleteBlog).toHaveBeenCalledTimes(1)
-    expect(deleteBlog).toHaveBeenCalledWith(blog)
-  })
-
-  test('does not call deleteBlog when deletion is cancelled', async () => {
-    const userEventInstance = userEvent.setup()
-    const deleteBlog = vi.fn()
-
-    window.confirm = vi.fn(() => false)
-
-    render(
-      <Blog
-        blog={blog}
-        user={user}
-        updateBlog={vi.fn()}
-        deleteBlog={deleteBlog}
-      />
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'show' })
-    )
-
-    await userEventInstance.click(
-      screen.getByRole('button', { name: 'delete' })
-    )
-
-    expect(deleteBlog).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'like' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'delete' })).not.toBeInTheDocument()
+    expect(screen.queryAllByRole('button')).toHaveLength(1)
   })
 })

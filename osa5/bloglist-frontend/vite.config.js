@@ -12,9 +12,10 @@ export default defineConfig({
       }
     }
   },
-    test: {
+  test: {
+    tags: [{ name:'5.13' }, { name:'5.14' }, { name:'5.15' }, { name:'5.16' }, { name:'5.27' }],
     environment: 'jsdom',
     globals: true,
-    setupFiles: './testSetup.js', 
+    setupFiles: './testSetup.js',
   }
 })

@@ -4,7 +4,8 @@ import {
   createBlog,
   showBlog,
   likeBlog,
-  randomBlog
+  randomBlog,
+  toTitleText
 } from './helper'
 
 
@@ -33,12 +34,18 @@ describe('Blog app', () => {
 
     await blogsLoaded
   })
-
- test('Login form is shown', {tag: '@5.17',}, async ({ page }) => {
-    await expect(
-      page.getByRole('heading', { name: 'Login' })
+  test('Login form is not shown', {tag: '@5.17',}, async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Log in to application' })).toHaveCount(0)
+        await expect(
+      page.getByRole('heading', { name: 'blogs' })
     ).toBeVisible()
-
+  })
+ test('Login form is shown', {tag: '@5.17',}, async ({ page }) => {
+    await page.getByRole('link', { name: 'login', exact: true }).click()
+    
+    await expect(
+      page.getByRole('heading', { name: 'Log in to application' })
+    ).toBeVisible()
     
     await expect(page.getByLabel('username')).toBeVisible()
     await expect(page.getByLabel('password')).toBeVisible()
@@ -48,6 +55,11 @@ describe('Blog app', () => {
     ).toBeVisible()
   })
  describe('Login', () => {
+    beforeEach(async ({ page }) => {
+      const loginLink = page.getByRole('link', { name: 'login', exact: true })
+      await expect(loginLink).toBeVisible()
+      await loginLink.click()
+    })
     test(
       '5.18 login succeeds with correct credentials', {tag: '@5.18'}, async ({ page }) => {
         await loginWith(
@@ -57,7 +69,7 @@ describe('Blog app', () => {
         )
 
         await expect(
-          page.getByText('Matti Luukkainen logged in')
+          page.getByText('Login successful! Welcome back!')
         ).toBeVisible()
       }
     )
@@ -76,7 +88,7 @@ describe('Blog app', () => {
         ).toBeVisible()
 
         await expect(
-          page.getByText('Matti Luukkainen logged in')
+          page.getByText('Login successful! Welcome back!')
         ).toHaveCount(0)
       }
     )
@@ -84,6 +96,7 @@ describe('Blog app', () => {
 
   describe('When logged in', () => {
     beforeEach(async ({ page }) => {
+        await page.getByRole('link', { name: 'login', exact: true }).click()
         await loginWith(page, 'mluukkai', 'salainen')
 
         await expect(
@@ -97,61 +110,47 @@ describe('Blog app', () => {
       }
     )
 
-    test('5.20 a blog can be liked', {tag: '@5.20'}, async ({ page }) => {
-        const blog1 = randomBlog()
-        await createBlog(page, blog1)
-        const {title} = blog1
-        const blog = await showBlog(
-          page,
-          title
-        )
+    test('5.20 a blog can be liked', { tag: '@5.20' }, async ({ page }) => {
+      const blog1 = randomBlog()
 
-        await expect(blog.getByText('likes 0')).toBeVisible()
+      await createBlog(page, blog1)
+      await showBlog(page, blog1)
 
-        await blog.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('likes 0')).toBeVisible()
 
-        await expect(blog.getByText('likes 1')).toBeVisible()
-      }
-    )
+      await page.getByRole('button', { name: 'like' }).click()
+
+      await expect(
+        page.getByText('likes 1')
+      ).toBeVisible()
+    })
 
     test('5.21 a blog can be deleted', {tag: '@5.21'}, async ({ page }) => {
         const blog1 = randomBlog()
 
         await createBlog(page, blog1)
+        await expect(page.getByRole('link', { name: toTitleText(blog1), exact: true })).toBeVisible()
+        await showBlog(page, blog1)
 
-        const blog = await showBlog(page, blog1.title)
+        page.once('dialog', async dialog => {
+            await dialog.accept()
+        })
 
-        page.once(
-          'dialog',
-          dialog => dialog.accept()
-        )
-
-        await blog
+        await page
           .getByRole('button', { name: 'delete' })
           .click()
-
-        await expect(
-          page.getByText(`${blog1.title} ${blog1.author}`)
-        ).toHaveCount(0)
+        await expect(page).toHaveURL('http://localhost:5173/')
+        await expect(page.getByRole('link', { name: toTitleText(blog1), exact: true })).toHaveCount(0)
       }
     )
 
     test('5.22 only the creator can see the delete button', {tag: '@5.22'}, async ({ page, request }) => {
-        const blot = randomBlog()
+        const blog1 = randomBlog()
 
-        await createBlog(page, blot)
+        await createBlog(page, blog1)
+        await showBlog(page, blog1)
 
-        let blog = await showBlog(
-          page,
-          blot.title
-        )
-
-        await expect(
-          blog.getByRole('button', {
-            name: 'delete'
-          })
-        ).toBeVisible()
-
+        await expect(page.getByRole('button', { name: 'delete' })).toBeVisible()
 
         await request.post(
           'http://localhost:3003/api/users',
@@ -167,23 +166,16 @@ describe('Blog app', () => {
         await page
           .getByRole('button', { name: 'logout' })
           .click()
-
+        await expect(page).toHaveURL('http://localhost:5173/')
+        await expect(page.getByRole('link', { name: 'login' })).toBeVisible()
         await loginWith(
           page,
           'pmikkola',
           'toinensalasana'
         )
 
-        blog = await showBlog(
-          page,
-          blot.title
-        )
-
-        await expect(
-          blog.getByRole('button', {
-            name: 'delete'
-          })
-        ).toHaveCount(0)
+        await showBlog(page, blog1)
+        await expect(page.getByRole('button', { name: 'delete' })).toHaveCount(0)
       }
     )
 
@@ -193,22 +185,25 @@ describe('Blog app', () => {
         const leastLiked = randomBlog()
 
         await createBlog(page, leastLiked)
+        await likeBlog(page, leastLiked, 1)
+        await page.goto('http://localhost:5173')
         await createBlog(page, mostLiked)
+        await likeBlog(page, mostLiked, 3)
+        await page.goto('http://localhost:5173')
         await createBlog(page, middleLiked)
+        await likeBlog(page, middleLiked, 2)
+        await page.goto('http://localhost:5173')
 
-        await likeBlog(page, leastLiked.title, 1)
-        await likeBlog(page, mostLiked.title, 3)
-        await likeBlog(page, middleLiked.title, 2)
         
         const blogs = page
-        .getByRole('button', { name: /show|hide/ })
-        .locator('..')
+          .getByRole('list')
+          .getByRole('listitem')
 
         await expect(blogs).toHaveCount(3)
-
-        await expect(blogs.nth(0)).toContainText(mostLiked.title)
-        await expect(blogs.nth(1)).toContainText(middleLiked.title)
-        await expect(blogs.nth(2)).toContainText(leastLiked.title)
+        
+        await expect(blogs.nth(0)).toContainText(toTitleText(mostLiked))
+        await expect(blogs.nth(1)).toContainText(toTitleText(middleLiked))
+        await expect(blogs.nth(2)).toContainText(toTitleText(leastLiked))
       }
     )
   })

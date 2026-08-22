@@ -1,10 +1,18 @@
-import { useState } from 'react'
-
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { TextField, Button, Box, Typography  } from '@mui/material'
 
 const emptyNewForm = () => ({ title: '', author: '', url: '' })
 
-const NewForm = ({  createBlog }) => {
+const NewForm = ({ user,createBlog }) => {
   const [form, setForm] = useState(emptyNewForm())
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login')
+    }
+  }, [user, navigate])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -18,17 +26,19 @@ const NewForm = ({  createBlog }) => {
     try {
       await createBlog(form)
       setForm(emptyNewForm())
+      navigate('/')
     } catch {
-      
+      //empty
     }
   }
   return (
-    <>
-      <h2>create new</h2>
-      <form onSubmit={handleSubmit}>
+    <Box style={{ display: 'flex', alignItems: 'center', gap: '0.5em', flexDirection:'column' }}>
+      <Typography variant='h2' component="h2">create new</Typography>
+      <form onSubmit={handleSubmit}   style={{ display: 'flex', alignItems: 'center', gap: '0.5em', flexDirection:'column' }}>
         <div>
-          <label htmlFor="title">title:</label>
-          <input
+          <TextField
+            label="title"
+            type='text'
             id="title"
             name="title"
             value={form.title}
@@ -37,8 +47,9 @@ const NewForm = ({  createBlog }) => {
         </div>
 
         <div>
-          <label htmlFor="author">author:</label>
-          <input
+          <TextField
+            label="author"
+            type="text"
             id="author"
             name="author"
             value={form.author}
@@ -47,8 +58,9 @@ const NewForm = ({  createBlog }) => {
         </div>
 
         <div>
-          <label htmlFor="url">url:</label>
-          <input
+          <TextField
+            label="url"
+            type="text"
             id="url"
             name="url"
             value={form.url}
@@ -56,9 +68,9 @@ const NewForm = ({  createBlog }) => {
           />
         </div>
 
-        <button type="submit">create</button>
+        <Button type="submit">create</Button>
       </form>
-    </>
+    </Box>
   )
 }
 
