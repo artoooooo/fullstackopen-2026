@@ -11,7 +11,7 @@ Osan 3 edellyttämä deploy: https://fullstackopen-2026-mb5f.onrender.com/
 * [x] Osa 2 – Palvelimen kanssa kommunikointi
 * [x] Osa 3 – Palvelimen ohjelmointi NodeJS:llä ja Expressillä
 * [x] Osa 4 – Express-palvelinten testaus ja käyttäjähallinta
-* [ ] Osa 5 – React-sovellusten testaus
+* [x] Osa 5 – React-sovellusten testaus
 * [ ] Osa 6 – Edistynyt tilanhallinta
 * [ ] Osa 7 – React Router, custom hookit, tyylitys ja webpack
 * [ ] Osa 8 – GraphQL
